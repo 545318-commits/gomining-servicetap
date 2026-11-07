@@ -138,6 +138,11 @@ jobs:
           # top of this job): quiet failures go to Sentry as warnings and
           # skip the cron check-in instead of reporting an error.
           TAP_QUIET: ${{ steps.mode.outputs.quiet }}
+          # Optional reward settings (TH / GOMINING / BTC plan and pool) live in the
+          # repo's Actions Variables (REWARD_PLAN_<LABEL> and friends, written by the
+          # setup wizard / settings page). All Variables are passed in at once so
+          # any account label works without editing this file. None set = off.
+          GH_VARS: ${{ toJSON(vars) }}
           # Comma-separated account labels. For each label, add a matching
           # GOMINING_COOKIES_<LABEL> secret below (e.g. a third account
           # needs GOMINING_ACCOUNT_LABELS: PRIMARY,SECONDARY,THIRD plus a

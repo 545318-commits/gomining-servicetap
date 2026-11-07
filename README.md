@@ -4,7 +4,9 @@ Automatically taps GoMining's daily "maintenance" (service) button for one or
 more accounts, so your maintenance-discount streak never lapses — even if
 your computer is off. Runs on GitHub Actions (free tier is plenty). Also
 includes an optional weekly job that re-extends your veGOMINING lock(s) so
-their votes don't decay (see "Weekly lock re-extend" below).
+their votes don't decay (see "Weekly lock re-extend" below), and an optional
+switch that alternates your daily reward between TH and GOMINING (see
+"Reward rotation" below).
 
 ## How it works
 
@@ -218,6 +220,54 @@ Since this is a real financial action, not a routine click:
   and counted OK — GoMining's own page drops the "Max" option at that
   point. A 0-GMT (closed) position is always skipped.
 
+## Optional: Daily reward destination (TH, GOMINING or BTC) and pool
+
+GoMining's Settings pop-up on the miners page decides where each day's
+reward goes: **TH** on one of your miners, **GOMINING** tokens in your
+wallet, or plain **BTC** (Reinvestment switched off). It also chooses your
+mining pool. ServiceTap can manage both for you, per account:
+
+- **Keep one choice** until you change it, e.g. always GOMINING.
+- **Alternate between two or three**, in the order you choose, e.g. 5 days
+  TH, then 5 days GOMINING, then 3 days BTC, repeating.
+- **Keep your pool set**, e.g. Antpool or SpiderPool, or leave it alone.
+
+**Off by default.** To turn it on or change it, use the
+[settings page](https://hypercaffiumlabs.github.io/gomining-servicetap/settings.html)
+(sign in with GitHub, pick your copy, choose, Save). The setup wizard also
+offers it for new setups. For TH you can name the **miner that gets the
+TH** by its number (e.g. `123456`); blank means your biggest miner in
+GoMining's list. **Miners on GoMining's monthly TH subscription can't
+receive reinvested TH**, so GoMining leaves them out of the list; if the
+miner you named isn't offered, the biggest one in the list is used and you
+get a warning.
+
+Changes happen in the same nightly runs as the service tap, before
+GoMining's morning payout, and only when something is wrong for that day.
+Days are counted from a fixed start date, so a missed night can't shift
+the cycle. ServiceTap drives GoMining's own Settings pop-up, then reopens
+it to check what GoMining actually saved (and tries again if needed), so
+your other settings there (maintenance in GOMINING, reward protection)
+stay as they are. For BTC days it switches Reinvestment **off**; for TH or
+GOMINING days it switches it back **on** and sets the choice explicitly.
+
+A failed change never fails the tap: it shows as a `reward settings` line
+in the run log (and a Sentry warning, if you use Sentry), and the setting
+stays where it was until the next run.
+
+Prefer GitHub's own screens? The settings are plain repo **Variables**
+(Settings → Secrets and variables → Actions → **Variables** tab), one set
+per account label: `REWARD_PLAN_<LABEL>` (`GMT` to keep one, or
+`TH:5,GMT:5,BTC:3` to alternate in that order), `REWARD_START_<LABEL>` (a
+date like `2026-11-05`, day 1 of the first choice), `REWARD_TH_MINER_<LABEL>`
+and `REWARD_POOL_<LABEL>`. Variables aren't secret: on a public fork,
+anyone can see them in run logs, including the miner number. Settings
+saved by v15/v16 (`REWARD_TH_DAYS_`/`REWARD_GMT_DAYS_`) keep working and
+are converted the next time you save on the settings page.
+
+Forked before this existed? Click **Sync fork** first (see "Staying up to
+date"): the settings page tells you if your copy is too old.
+
 ## Staying up to date
 
 Your fork doesn't update itself.
@@ -295,19 +345,43 @@ behalf — not unique to this repo.
 
 ## A note on GoMining's terms
 
-We read GoMining's [Terms of Use](https://gomining.com/terms) directly.
-Automation is prohibited in a few places, but each is scoped to a specific
-feature — Bonus Miner rewards (2.6.6), the Miner Wars "Spell Bot" (4.3.6),
-the AI Assistant (8.4.7d), raffle/contest entries (10.3) — and the
-maintenance discount itself (3.1–3.2) carries no automation restriction
-anywhere in the document. Automating the daily tap also appears to be a
-fairly common, openly-discussed practice
+We read GoMining's [Terms of Use](https://gomining.com/terms) directly, most
+recently the version last updated **23 October 2026**. Automation is
+prohibited in a few places, but each rule is tied to a specific feature:
+Bonus Miner rewards (2.6.6), the Miner Wars "Spell Bot" (4.3.6), GoMining
+Travel partners' systems (7.7.1), the AI Assistant (8.4.7d) and raffle or
+contest entries (10.3). There is no platform-wide ban on automation, and
+nothing restricts automating the maintenance discount (3.1), the veGOMINING
+lock, or the reward setting. Automating the daily tap also appears to be a
+fairly common, openly discussed practice
 ([example browser extension](https://gist.github.com/magicdude4eva/11a9b24e2066a5f0198c6df241d5059f)).
 
-That said, Section 42 reserves the right to terminate any account "for any
-other reason or no reason" — a standard broad clause, independent of any
-specific rule. Not legal advice; terms change; check GoMining's current
-ToS yourself.
+On the optional reward settings:
+
+- The terms don't limit how often you change where rewards go. The closest
+  rule (8.2.16, for Simple Earn) lets you switch reward format or target
+  miner "at any time". ServiceTap uses GoMining's own Settings pop-up, the
+  same as clicking it yourself.
+- Enabling reinvestment on a miner with an active TH subscription is
+  prohibited (13.15). ServiceTap only picks from the miners GoMining itself
+  offers, which leaves subscription miners out. The Reinvestment switch is
+  account-wide; ServiceTap only turns it off for BTC days and back on for
+  TH or GOMINING days, as you would by hand.
+
+Two things to keep in mind:
+
+- The Bonus Miner clause (2.6.6) lists "use of bots, scripts, or automated
+  systems" under the Bonus Miner heading, with Bonus Miner penalties, but
+  the list itself isn't explicitly limited to that program.
+- In the TH subscription section, 13.15 also says you may not "transfer an
+  account to third parties (managing an account from another user,
+  mulling)". It reads as aimed at account trading, but if you run other
+  people's accounts from your copy, that's worth knowing.
+
+Section 42 also reserves the right to terminate any account "for any other
+reason or no reason", a standard broad clause independent of any specific
+rule. Not legal advice; terms change; check GoMining's current terms
+yourself.
 
 ## License
 
